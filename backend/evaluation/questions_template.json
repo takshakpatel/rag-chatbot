@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "question": "Replace this with your first test question",
+    "expected_answer": "The correct answer from your documents",
+    "expected_source_files": ["document_name.pdf"],
+    "expected_keywords": ["keyword1", "keyword2"],
+    "category": "factual",
+    "unanswerable": false
+  },
+  {
+    "id": 2,
+    "question": "Replace this with your second test question",
+    "expected_answer": "The correct answer from your documents",
+    "expected_source_files": ["document_name.pdf"],
+    "expected_keywords": ["keyword1", "keyword2"],
+    "category": "factual",
+    "unanswerable": false
+  },
+  {
+    "id": 3,
+    "question": "This question cannot be answered from the documents",
+    "expected_answer": "I don't have enough information",
+    "expected_source_files": [],
+    "expected_keywords": [],
+    "category": "unanswerable",
+    "unanswerable": true
+  }
+]

@@ -1,0 +1,389 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+/* Token: full color (for raw CSS use) + RGB triplet (for Tailwind opacity math). */
+:root {
+  --abyss-0: #000000;
+  --abyss-0-rgb: 0 0 0;
+  --abyss-1: #080c16;
+  --abyss-1-rgb: 8 12 22;
+  --abyss-2: #0c1322;
+  --abyss-2-rgb: 12 19 34;
+  --abyss-3: #111a2e;
+  --abyss-3-rgb: 17 26 46;
+  --abyss-4: #16223a;
+  --abyss-4-rgb: 22 34 58;
+  --abyss-5: #1c2b48;
+  --abyss-5-rgb: 28 43 72;
+  --thermo: #4cc9f0;
+  --thermo-rgb: 76 201 240;
+  --thermo-bright: #7fe0ff;
+  --thermo-bright-rgb: 127 224 255;
+  --thermo-dim: #2a8fb8;
+  --thermo-dim-rgb: 42 143 184;
+  --sea-surface: #a8e7f2;
+  --sea-surface-rgb: 168 231 242;
+  --surface-warm: #f4a9b8;
+  --surface-warm-rgb: 244 169 184;
+  --surface-warm-deep: #e3778f;
+  --surface-warm-deep-rgb: 227 119 143;
+  --marine: #e8f4f9;
+  --marine-rgb: 232 244 249;
+  --ink: #c9e0ee;
+  --ink-rgb: 201 224 238;
+  --ink-dim: #8aa6bd;
+  --ink-dim-rgb: 138 166 189;
+  --ink-faint: #5f7a90;
+  --ink-faint-rgb: 95 122 144;
+  --reply: #e7eef9;
+  --reply-rgb: 231 238 249;
+  --verified: #5ae0a0;
+  --verified-rgb: 90 224 160;
+  --refusal: #f4a261;
+  --refusal-rgb: 244 162 97;
+  --hold: #a78bfa;
+  --hold-rgb: 167 139 250;
+  --ruler-tick: #2b3b57;
+  --ruler-tick-rgb: 43 59 87;
+}
+
+/* Light mode: the world read on a sunlit surface chart.
+   Surfaces invert (abyss-0 lightest ground, abyss-5 strongest raise),
+   ink darkens onto the pale ground, accents deepen for contrast. */
+.theme-light {
+  --abyss-0: #eef3f8;
+  --abyss-0-rgb: 238 243 248;
+  --abyss-1: #e4ebf2;
+  --abyss-1-rgb: 228 235 242;
+  --abyss-2: #d9e2ec;
+  --abyss-2-rgb: 217 226 236;
+  --abyss-3: #ccd9e6;
+  --abyss-3-rgb: 204 217 230;
+  --abyss-4: #bccde0;
+  --abyss-4-rgb: 188 205 224;
+  --abyss-5: #a8bed6;
+  --abyss-5-rgb: 168 190 214;
+  --thermo: #1290b8;
+  --thermo-rgb: 18 144 184;
+  --thermo-bright: #0a7a9e;
+  --thermo-bright-rgb: 10 122 158;
+  --thermo-dim: #2a8fb8;
+  --thermo-dim-rgb: 42 143 184;
+  --sea-surface: #2a8fb8;
+  --sea-surface-rgb: 42 143 184;
+  --surface-warm: #d95d7f;
+  --surface-warm-rgb: 217 93 127;
+  --surface-warm-deep: #c04a66;
+  --surface-warm-deep-rgb: 192 74 102;
+  --marine: #1b2b38;
+  --marine-rgb: 27 43 56;
+  --ink: #22303f;
+  --ink-rgb: 34 48 63;
+  --ink-dim: #5a6f83;
+  --ink-dim-rgb: 90 111 131;
+  --ink-faint: #6b8096;
+  --ink-faint-rgb: 107 128 150;
+  --reply: #232b3a;
+  --reply-rgb: 35 43 58;
+  --verified: #17946a;
+  --verified-rgb: 23 148 106;
+  --refusal: #c2722c;
+  --refusal-rgb: 194 114 44;
+  --hold: #7c5cd6;
+  --hold-rgb: 124 92 214;
+  --ruler-tick: #bccde0;
+  --ruler-tick-rgb: 188 205 224;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--ink);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+/* ---- Themed browser surfaces: the parts we did not draw ---- */
+
+::selection {
+  background: var(--thermo);
+  color: var(--abyss-0);
+}
+
+/* Caret */
+input,
+textarea {
+  caret-color: var(--thermo);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--abyss-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--abyss-4);
+  border: 2px solid var(--abyss-1);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--thermo-dim);
+}
+
+/* Focus rings */
+:focus-visible {
+  outline: 2px solid var(--thermo);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Tabular data: draft digits that belong to the world */
+.digits {
+  font-family: "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+*:focus {
+  outline: none;
+}
+
+/* ---- Glass: the surface language of the build ---- */
+
+/* Frosted panel: translucent fill + heavy blur + inner top light + hairline. */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
+  box-shadow:
+    inset 0 1px 0 var(--glass-gloss),
+    0 12px 40px -18px var(--glass-shadow);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Frosted raised (surfaces one step up: inputs, chips, active). */
+.glass-strong {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-line);
+  box-shadow:
+    inset 0 1px 0 var(--glass-gloss),
+    0 8px 28px -16px var(--glass-shadow);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+/* Input well: a recessed dark field, carved into the surface rather than
+   raised above it. Uses an inset shadow and no top gloss so it reads darker
+   than the surrounding panels. */
+.glass-field {
+  background: var(--glass-field-bg);
+  border: 1px solid var(--glass-field-line);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+/* A soft rounded glass metric/chip tile. */
+.glass-tile {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 var(--glass-gloss);
+}
+
+/* User bubble: a solid mono fill so its text stays readable in both themes. */
+.bubble-user {
+  background: var(--user-solid);
+  border: 1px solid var(--user-solid-border);
+  box-shadow: 0 12px 40px -14px var(--glass-shadow);
+}
+
+/* ---- Motion: arrival, feedback, and the authored entrance ---- */
+
+/* Equip an element to move (GPU-friendly; transform + opacity only). */
+@keyframes dive-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* The question's reading arriving: it surfaces from the deep. */
+.dive-enter {
+  animation: dive-in 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* A soft settle for every later message; respects distance without re-composing layout. */
+@keyframes sink-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sink-enter {
+  animation: sink-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* The source-pin panel pulling up from the pinned depth. */
+@keyframes pin-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    clip-path: inset(30% 0 0 0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0);
+  }
+}
+.pin-rise {
+  animation: pin-rise 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* The descent sheen: a single pass of thermocline light across the reading. */
+@keyframes sheen {
+  0% {
+    background-position: 120% 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -40% 0;
+    opacity: 0;
+  }
+}
+.sheen {
+  background-image: linear-gradient(90deg, transparent, rgba(76, 201, 240, 0.12), transparent);
+  background-repeat: no-repeat;
+  background-size: 60% 100%;
+  background-position: 120% 0;
+  animation: sheen 700ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+  pointer-events: none;
+}
+
+/* The send arrow acknowledging the dive. */
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+.nudge {
+  animation: nudge 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Readout digits settling: a quick count-snap up, meaning a durable number. */
+@keyframes digit-snap {
+  from {
+    transform: translateY(40%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.digit-snap {
+  display: inline-block;
+  animation: digit-snap 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Aurora field: rich, moving color behind the glass so the blur reads. */
+.depth-canvas {
+  background:
+    radial-gradient(60% 55% at 12% 8%, rgba(var(--orb-violet-rgb), 0.3), transparent 70%),
+    radial-gradient(55% 50% at 88% 12%, rgba(var(--orb-cyan-rgb), 0.26), transparent 70%),
+    radial-gradient(65% 60% at 78% 88%, rgba(var(--orb-pink-rgb), 0.26), transparent 70%),
+    radial-gradient(50% 50% at 18% 78%, rgba(var(--orb-indigo-rgb), 0.26), transparent 72%),
+    var(--bg-base);
+}
+
+/* Slow drift so the glass surface has life without demanding attention. */
+@keyframes aurora-drift {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 12% 6%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+.depth-canvas {
+  background-size: 120% 120%;
+  animation: aurora-drift 32s ease-in-out infinite;
+}
+
+:root {
+  --bg-base: #000000;
+  --orb-violet-rgb: 120 92 224;
+  --orb-cyan-rgb: 40 172 232;
+  --orb-pink-rgb: 236 108 168;
+  --orb-indigo-rgb: 90 80 200;
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(255, 255, 255, 0.1);
+  --glass-field-bg: rgba(255, 255, 255, 0.035);
+  --glass-field-line: rgba(255, 255, 255, 0.14);
+  --glass-line: rgba(255, 255, 255, 0.12);
+  --glass-gloss: rgba(255, 255, 255, 0.16);
+  --glass-shadow: rgba(0, 0, 0, 0.7);
+  --user-solid: #6a63e8;
+  --user-solid-border: rgba(255, 255, 255, 0.14);
+}
+
+.theme-light {
+  --bg-base: #eef1fb;
+  --orb-violet-rgb: 150 118 255;
+  --orb-cyan-rgb: 64 190 255;
+  --orb-pink-rgb: 250 150 200;
+  --orb-indigo-rgb: 140 130 255;
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --glass-bg-strong: rgba(255, 255, 255, 0.6);
+  --glass-field-bg: rgba(255, 255, 255, 0.5);
+  --glass-field-line: rgba(255, 255, 255, 0.7);
+  --glass-line: rgba(255, 255, 255, 0.65);
+  --glass-gloss: rgba(255, 255, 255, 0.9);
+  --glass-shadow: rgba(40, 50, 90, 0.22);
+  --user-solid: #4f46c9;
+  --user-solid-border: rgba(255, 255, 255, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

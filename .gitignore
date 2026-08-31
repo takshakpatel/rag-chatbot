@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+chroma_db/
+*.egg-info/
+node_modules/
+.next/
+frontend/.next/
+frontend/node_modules/
+
+# Private user documents and extracted media (do not share)
+backend/documents/
+backend/extracted_images/
+
+# Build caches
+*.tsbuildinfo
+
+# Local tooling caches
+.impeccable/
+.surface/
+
