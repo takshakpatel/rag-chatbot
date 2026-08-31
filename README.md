@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔦 Lumen
+#  Lumen
 
 **A local-first RAG chatbot that answers strictly from your own documents — with hybrid retrieval, cross-encoder re-ranking, inline citations, and a frosted-glass UI.**
 
@@ -10,7 +10,7 @@ Fully free & private: embeddings, retrieval, re-ranking and generation all run *
 
 ---
 
-## ✨ Highlights
+## Highlights
 
 - **100% local & private** — `all-MiniLM-L6-v2` embeddings, `llama3.2` LLM via [Ollama](https://ollama.com), and a local cross-encoder re-ranker. No API keys, no data leaves your machine.
 - **Hybrid retrieval** — BM25 keyword search + dense vector search fused with **Reciprocal Rank Fusion**, then re-ranked by a cross-encoder for precision.
@@ -22,7 +22,7 @@ Fully free & private: embeddings, retrieval, re-ranking and generation all run *
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 ```
 ┌─────────────────┐        ┌──────────────────────────────────────────────┐
@@ -59,7 +59,7 @@ Fully free & private: embeddings, retrieval, re-ranking and generation all run *
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 
@@ -112,7 +112,7 @@ Open **http://localhost:3000** — the UI proxy forwards `/api` → `localhost:8
 
 ---
 
-## ⚙️ Configuration (`backend/.env`)
+##  Configuration (`backend/.env`)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -126,7 +126,7 @@ Open **http://localhost:3000** — the UI proxy forwards `/api` → `localhost:8
 
 ---
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -140,7 +140,7 @@ Open **http://localhost:3000** — the UI proxy forwards `/api` → `localhost:8
 
 ---
 
-## 🗺️ Project Structure
+## Project Structure
 
 ```
 .
@@ -175,7 +175,7 @@ Open **http://localhost:3000** — the UI proxy forwards `/api` → `localhost:8
 
 ---
 
-## 🔒 Privacy & Security
+##  Privacy & Security
 
 - Everything runs locally — nothing is sent to a cloud provider by default.
 - Retrieval **dedupes duplicate chunks** and the LLM call uses **retry-with-backoff** for stability.
@@ -183,6 +183,6 @@ Open **http://localhost:3000** — the UI proxy forwards `/api` → `localhost:8
 
 ---
 
-## 📄 License
+##  License
 
 MIT
