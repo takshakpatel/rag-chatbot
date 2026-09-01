@@ -102,11 +102,18 @@ curl -X POST http://localhost:8000/ingest/upload \
 
 ### 3. Frontend
 
+Run these two commands (from the `frontend` directory):
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+- **`npm install`** — installs the frontend's dependencies (run once).
+- **`npm run dev`** — starts the Next.js dev server.
+
+> Use `npm.cmd` instead of `npm` if you're on Windows and `npm` isn't resolving. Don't run a production build (`npm run build`) while the dev server is running — they share the `.next` cache and can corrupt it.
 
 Open **http://localhost:3000** — the UI proxy forwards `/api` → `localhost:8000` automatically.
 
