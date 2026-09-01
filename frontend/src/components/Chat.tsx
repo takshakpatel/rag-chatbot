@@ -93,15 +93,30 @@ export default function Chat() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand shadow-glass-glow">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M12 2.5c2.1 2.1 6 3.9 6 7.8 0 3.9-2.6 6.6-6 7.7-3.4-1.1-6-3.8-6-7.7 0-3.9 3.9-5.7 6-7.8Z"
-                  fill="#fff"
-                  fillOpacity="0.9"
-                />
-                <circle cx="12" cy="10.6" r="1.8" fill="#8b7cf6" />
-              </svg>
+            <div className="group">
+              <div className="brand-tile flex h-14 w-14 items-center justify-center rounded-2xl bg-brand">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    className="brand-page brand-page-left"
+                    d="M12 5.6 C9.1 4.2 5.9 4.9 4 7.4 L4 18 C6.6 16.4 9.3 15.9 12 17.4 Z"
+                    fill="#fff"
+                    fillOpacity="0.4"
+                  />
+                  <path
+                    className="brand-page brand-page-right"
+                    d="M12 5.6 C14.9 4.2 18.1 4.9 20 7.4 L20 18 C17.4 16.4 14.7 15.9 12 17.4 Z"
+                    fill="#fff"
+                  />
+                  <path
+                    className="brand-spine"
+                    d="M12 5.6 L12 17.4"
+                    stroke="#fff"
+                    strokeOpacity="0.75"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
             </div>
             <div>
               <p className="text-[15px] font-medium text-ink">Ask Lumen anything about your documents</p>

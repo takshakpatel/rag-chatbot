@@ -214,6 +214,43 @@ textarea {
   box-shadow: 0 12px 40px -14px var(--glass-shadow);
 }
 
+/* ---- Brand mark hover: tile lift + glow, and the open book parting ---- */
+
+.brand-tile {
+  box-shadow:
+    0 0 0 1px rgba(139, 124, 246, 0.28),
+    0 0 16px 4px rgba(139, 124, 246, 0.35),
+    0 0 40px 14px rgba(139, 124, 246, 0.22),
+    0 12px 36px -12px rgba(139, 124, 246, 0.5);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .brand-tile {
+  transform: translateY(-2px);
+  filter: brightness(1.12) saturate(1.05);
+}
+
+.brand-page {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .brand-page-left {
+  transform: rotate(-7deg) translateX(-0.5%);
+  opacity: 0.65;
+}
+.group:hover .brand-page-right {
+  transform: rotate(7deg) translateX(0.5%);
+}
+.brand-spine {
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .brand-spine {
+  opacity: 1;
+}
+
 /* ---- Motion: arrival, feedback, and the authored entrance ---- */
 
 /* Equip an element to move (GPU-friendly; transform + opacity only). */

@@ -6,15 +6,33 @@ import Chat from "@/components/Chat";
 
 function BrandMark() {
   return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand shadow-glass-glow">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-        <path
-          d="M9 1.5c1.6 1.6 4.6 3 4.6 6 0 2.9-2 5-4.6 5.8-2.6-.8-4.6-2.9-4.6-5.8 0-3 3-4.4 4.6-6Z"
-          fill="#fff"
-          fillOpacity="0.95"
-        />
-        <circle cx="9" cy="8" r="1.4" fill="#8b7cf6" />
-      </svg>
+    <div className="group relative">
+      <div className="brand-tile flex h-9 w-9 items-center justify-center rounded-xl bg-brand">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          {/* left page */}
+          <path
+            className="brand-page brand-page-left"
+            d="M12 5.6 C9.1 4.2 5.9 4.9 4 7.4 L4 18 C6.6 16.4 9.3 15.9 12 17.4 Z"
+            fill="#fff"
+            fillOpacity="0.4"
+          />
+          {/* right page */}
+          <path
+            className="brand-page brand-page-right"
+            d="M12 5.6 C14.9 4.2 18.1 4.9 20 7.4 L20 18 C17.4 16.4 14.7 15.9 12 17.4 Z"
+            fill="#fff"
+          />
+          {/* spine crease */}
+          <path
+            className="brand-spine"
+            d="M12 5.6 L12 17.4"
+            stroke="#fff"
+            strokeOpacity="0.75"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
     </div>
   );
 }

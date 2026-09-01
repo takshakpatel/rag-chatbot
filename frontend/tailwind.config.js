@@ -36,7 +36,7 @@ module.exports = {
         "glass-glow": "0 12px 40px -14px var(--glass-shadow)",
       },
       backgroundImage: {
-        brand: "linear-gradient(135deg, #8b7cf6 0%, #4cc9f0 55%, #5ae0a0 100%)",
+        brand: "linear-gradient(135deg, #8b7cf6 0%, #5f4fe0 100%)",
       },
     },
   },
