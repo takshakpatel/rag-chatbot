@@ -4,7 +4,7 @@
 
 ## Surface
 
-`frontend/src/app/page.tsx` + components — RAG Chat UI (the "RAG Studio" surface).
+`frontend/src/app/page.tsx` + components — the Lumen chat UI (the "Lumen" glassmorphism surface).
 
 ## Mode
 
@@ -12,7 +12,7 @@ Operate. The visitor completes a task: uploading documents and asking questions 
 
 ## Visual World
 
-Modern SaaS Glassmorphism ("Glass Studio"). Panels are frosted glass floating over a slow-drifting aurora field. The interface is a luminous workspace: translucent cards (`backdrop-blur` + saturate), hairline inner-top gloss, soft outer glow, and large rounded radii. A self-owned violet→cyan→green brand gradient carries primary actions and identity. Depth/abyssal metaphor is retired in favor of a clean, airy, app-like surface.
+Modern SaaS Glassmorphism (the "Lumen" Glass Studio). Panels are frosted glass floating over a slow-drifting aurora field. The interface is a luminous workspace: translucent cards (`backdrop-blur` + saturate), hairline inner-top gloss, soft outer glow, and large rounded radii. A self-owned violet→cyan→green brand gradient carries primary actions and identity. Depth/abyssal metaphor is retired in favor of a clean, airy, app-like surface.
 
 ## Palette
 
@@ -100,4 +100,4 @@ Orchestrates the conversation: empty state → dragging → VERIFIED/TURN readou
 
 ## Contract
 
-Seed: `d6159bf5`. User-picked challenger (competitive alternate from direction roll). Build is code-led. Major direction pivoted on request from the Deep-Dive Depth Profile to modern glassmorphism ("Glass Studio"); the depth ruler and abyssal surfaces were retired, the citation component renamed `DepthPins` → `SourcePins`. Contract emitted in root layout HTML comment.
+Seed: `d6159bf5`. User-picked challenger (competitive alternate from direction roll). Build is code-led. Major direction pivoted on request from the Deep-Dive Depth Profile to modern glassmorphism ("Glass Studio"); the depth ruler and abyssal surfaces were retired, the citation component renamed `DepthPins` → `SourcePins`. The product is now branded **Lumen**. Contract emitted in root layout HTML comment.

@@ -27,8 +27,8 @@ from app.schemas import (
 )
 
 app = FastAPI(
-    title="RAG Chatbot",
-    description="Retrieval-augmented generation over your own documents.",
+    title="Lumen",
+    description="Lumen — retrieval-augmented generation over your own documents.",
     version="0.1.0",
 )
 
