@@ -14,6 +14,38 @@ from langchain_core.documents import Document
 from app.image_extractor import extract_images_from_pdf
 
 
+def _load_pptx(path: Path) -> list[Document]:
+    """Load a PowerPoint file, extracting text from every slide."""
+    try:
+        from pptx import Presentation  # type: ignore
+    except ImportError:
+        print("Warning: python-pptx not installed. Run: pip install python-pptx")
+        return []
+
+    try:
+        prs = Presentation(str(path))
+        docs = []
+        for slide_num, slide in enumerate(prs.slides, start=1):
+            texts = []
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    texts.append(shape.text.strip())
+            if texts:
+                content = "\n".join(texts)
+                docs.append(Document(
+                    page_content=content,
+                    metadata={
+                        "source": str(path),
+                        "filename": path.name,
+                        "slide": slide_num,
+                    },
+                ))
+        return docs
+    except Exception as e:
+        print(f"Warning: failed to load {path}: {e}")
+        return []
+
+
 SUPPORTED_EXTENSIONS = {
     ".pdf": PyPDFLoader,
     ".docx": Docx2txtLoader,
@@ -21,13 +53,14 @@ SUPPORTED_EXTENSIONS = {
     ".htm": BSHTMLLoader,
     ".md": TextLoader,
     ".txt": TextLoader,
+    ".pptx": None,  # handled by _load_pptx
 }
 
 
 def load_documents(path: str | Path, extract_images: bool = True) -> list[Document]:
     """Load documents from a file or directory.
 
-    Supported formats: PDF, DOCX, HTML, Markdown, TXT.
+    Supported formats: PDF, DOCX, HTML, Markdown, TXT, PPTX.
     For PDFs, also extracts images (with captions) as separate Document objects.
     Returns a flat list of LangChain Document objects.
     """
@@ -73,6 +106,10 @@ def load_uploaded_files(paths: list[str | Path], extract_images: bool = True) ->
 
 def _load_file(path: Path) -> list[Document]:
     ext = path.suffix.lower()
+
+    if ext == ".pptx":
+        return _load_pptx(path)
+
     loader_cls = SUPPORTED_EXTENSIONS.get(ext)
     if loader_cls is None:
         return []

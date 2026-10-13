@@ -60,7 +60,7 @@ def hybrid_retrieve(
 
     vector_results = store.similarity_search(query, k=k * 2, filter={"type": {"$ne": "image"}})
 
-    all_docs = store.get(filter={"type": {"$ne": "image"}})
+    all_docs = store.get(where={"type": {"$ne": "image"}})
     if all_docs and all_docs.get("documents"):
         bm25_docs = [
             Document(page_content=doc, metadata=meta)

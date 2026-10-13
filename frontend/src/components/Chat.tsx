@@ -2,13 +2,28 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Message } from "@/types";
-import { queryDocuments } from "@/lib/api";
+import { queryDocuments, fetchSessionDetail, createSession } from "@/lib/api";
 import MessageBubble from "./MessageBubble";
 
-export default function Chat() {
+interface ChatProps {
+  activeSessionId: string | null;
+  onSessionCreated?: (sessionId: string) => void;
+  onSessionUpdated?: () => void;
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
+}
+
+export default function Chat({
+  activeSessionId,
+  onSessionCreated,
+  onSessionUpdated,
+  onToggleSidebar,
+  isSidebarOpen,
+}: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [sendPulse, setSendPulse] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -19,6 +34,34 @@ export default function Chat() {
     });
   }, []);
 
+  // Load messages when activeSessionId changes
+  useEffect(() => {
+    if (!activeSessionId) {
+      setMessages([]);
+      return;
+    }
+
+    let isMounted = true;
+    setHistoryLoading(true);
+
+    fetchSessionDetail(activeSessionId)
+      .then((data) => {
+        if (isMounted) {
+          setMessages(data.messages || []);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load session history:", err);
+      })
+      .finally(() => {
+        if (isMounted) setHistoryLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeSessionId]);
+
   useEffect(() => {
     scrolling();
   }, [messages, loading, scrolling]);
@@ -27,6 +70,21 @@ export default function Chat() {
     const text = input.trim();
     if (!text || loading) return;
 
+    let currentSessionId = activeSessionId;
+
+    // If no session exists yet, create one
+    if (!currentSessionId) {
+      try {
+        const newSess = await createSession(text.slice(0, 35));
+        currentSessionId = newSess.id;
+        if (onSessionCreated) {
+          onSessionCreated(currentSessionId);
+        }
+      } catch (e) {
+        console.error("Failed to create session, proceeding with default session", e);
+      }
+    }
+
     const userMsg: Message = { role: "user", content: text, timestamp: Date.now() };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
@@ -34,14 +92,19 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const res = await queryDocuments(text);
+      const res = await queryDocuments(text, 5, currentSessionId);
       const botMsg: Message = {
         role: "assistant",
         content: res.answer,
         sources: res.sources,
+        tokens: res.tokens,
+        latency_ms: res.latency_ms,
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, botMsg]);
+      if (onSessionUpdated) {
+        onSessionUpdated();
+      }
     } catch (e: any) {
       const isTimeout = e?.name === "AbortError" || /timed? ?out|aborted/i.test(e?.message || "");
       const friendly = isTimeout
@@ -70,9 +133,24 @@ export default function Chat() {
     <div className="glass mt-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl">
       {/* Chat header */}
       <div className="flex items-center justify-between border-b border-ink-faint/20 px-4 py-2.5 sm:px-6">
-        <div className="text-[12px] font-medium text-ink">
-          {messages.length === 0 ? "Conversation" : `${messages.length} message${messages.length === 1 ? "" : "s"}`}
+        <div className="flex items-center gap-3">
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              aria-label={isSidebarOpen ? "Hide sidebar" : "Show chat history"}
+              title={isSidebarOpen ? "Hide sidebar" : "Show chat history"}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-dim hover:bg-ink-faint/10 hover:text-ink transition-colors"
+            >
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
+          <div className="text-[12px] font-medium text-ink">
+            {messages.length === 0 ? "Conversation" : `${messages.length} message${messages.length === 1 ? "" : "s"}`}
+          </div>
         </div>
+
         {messages.length > 0 && (
           <button
             onClick={clearChat}
@@ -84,14 +162,21 @@ export default function Chat() {
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M1.5 3h11M4 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M5.5 6v3.5M8.5 6v3.5M2.5 3l.5 8.5a1 1 0 0 0 1 .9h6a1 1 0 0 0 1-.9l.5-8.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
-            Clear chat
+            Clear view
           </button>
         )}
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-        {messages.length === 0 && (
+        {historyLoading ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="flex items-center gap-2 text-xs text-ink-dim">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+              Loading conversation history...
+            </div>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
             <div className="group">
               <div className="brand-tile flex h-14 w-14 items-center justify-center rounded-2xl bg-brand">
@@ -126,14 +211,16 @@ export default function Chat() {
               </p>
             </div>
           </div>
+        ) : (
+          messages.map((msg, i) => (
+            <MessageBubble
+              key={msg.id || i}
+              message={msg}
+              enterClass={i === messages.length - 1 ? "dive-enter" : "sink-enter"}
+            />
+          ))
         )}
-        {messages.map((msg, i) => (
-          <MessageBubble
-            key={i}
-            message={msg}
-            enterClass={i === messages.length - 1 ? "dive-enter" : "sink-enter"}
-          />
-        ))}
+
         {loading && (
           <div className="mb-4 flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
@@ -157,7 +244,7 @@ export default function Chat() {
                   handleSend();
                 }
               }}
-              placeholder="Ask a question…"
+              placeholder="Ask a question or follow-up…"
               rows={1}
               className="w-full resize-none rounded-xl bg-transparent px-2 py-2 text-sm text-reply placeholder-ink-dim focus:outline-none max-h-40"
             />

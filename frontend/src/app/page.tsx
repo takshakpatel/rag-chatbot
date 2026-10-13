@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import IngestPanel from "@/components/IngestPanel";
 import Chat from "@/components/Chat";
+import Sidebar from "@/components/Sidebar";
+import { ChatSession } from "@/types";
+import { fetchSessions, renameSession, deleteSession } from "@/lib/api";
 
 function BrandMark() {
   return (
@@ -86,20 +89,80 @@ function ThemeToggle() {
 
 export default function Home() {
   const [status, setStatus] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const loadSessions = useCallback(async () => {
+    try {
+      const data = await fetchSessions();
+      setSessions(data);
+    } catch (e) {
+      console.error("Failed to fetch chat sessions:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  const handleNewChat = () => {
+    setActiveSessionId(null);
+  };
+
+  const handleSelectSession = (id: string) => {
+    setActiveSessionId(id);
+  };
+
+  const handleRenameSession = async (id: string, newTitle: string) => {
+    try {
+      await renameSession(id, newTitle);
+      loadSessions();
+    } catch (e) {
+      console.error("Failed to rename session:", e);
+    }
+  };
+
+  const handleDeleteSession = async (id: string) => {
+    try {
+      await deleteSession(id);
+      if (activeSessionId === id) {
+        setActiveSessionId(null);
+      }
+      loadSessions();
+    } catch (e) {
+      console.error("Failed to delete session:", e);
+    }
+  };
+
+  const handleSessionCreated = (id: string) => {
+    setActiveSessionId(id);
+    loadSessions();
+  };
 
   return (
     <div className="depth-canvas relative flex h-screen flex-col">
-      {/* Header — the surface line */}
+      {/* Header */}
       <header className="relative z-10 px-4 pt-4 sm:px-6">
-        <div className="glass mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-2.5">
+        <div className="glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl px-4 py-2.5">
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSidebarOpen((v) => !v)}
+              aria-label="Toggle chat history"
+              title="Toggle chat history"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-dim hover:bg-ink-faint/10 hover:text-ink transition-colors"
+            >
+              <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+            </button>
             <BrandMark />
             <div>
               <h1 className="text-[14px] font-semibold tracking-tight text-ink">
                 Lumen
               </h1>
               <p className="text-[11px] text-ink-dim">
-                Ask your documents · cited answers
+                Ask your documents · cited multi-turn answers
               </p>
             </div>
           </div>
@@ -107,16 +170,35 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Body */}
-      <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 sm:px-6">
-        <IngestPanel onIngested={setStatus} />
-        {status && (
-          <div className="glass mt-3 flex flex-none items-center gap-2 rounded-lg px-4 py-2 text-xs text-ink">
-            <span className="h-1.5 w-1.5 rounded-full bg-verified" />
-            {status}
-          </div>
-        )}
-        <Chat />
+      {/* Main Workspace with Sidebar & Chat */}
+      <main className="relative z-10 mx-auto flex w-full max-w-7xl min-h-0 flex-1 gap-3 overflow-hidden px-4 pb-4 pt-3 sm:px-6">
+        <Sidebar
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          onSelectSession={handleSelectSession}
+          onNewChat={handleNewChat}
+          onRenameSession={handleRenameSession}
+          onDeleteSession={handleDeleteSession}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen((v) => !v)}
+        />
+
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <IngestPanel onIngested={setStatus} />
+          {status && (
+            <div className="glass mt-3 flex flex-none items-center gap-2 rounded-lg px-4 py-2 text-xs text-ink">
+              <span className="h-1.5 w-1.5 rounded-full bg-verified" />
+              {status}
+            </div>
+          )}
+          <Chat
+            activeSessionId={activeSessionId}
+            onSessionCreated={handleSessionCreated}
+            onSessionUpdated={loadSessions}
+            onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
+            isSidebarOpen={isSidebarOpen}
+          />
+        </div>
       </main>
     </div>
   );

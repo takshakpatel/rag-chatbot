@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Python, FastAPI, LangChain, embedding model, Chroma, Next.js
+Python, FastAPI, LangChain, Groq API (ChatGroq), local sentence-transformers (all-MiniLM-L6-v2 embeddings + ms-marco cross-encoder re-ranker), ChromaDB, BM25, SQLite, Next.js 14 (React 18, TypeScript, Tailwind CSS), Docker
 
 ## Users
 
@@ -44,8 +44,10 @@ Unlike a generic LLM chatbot, this system ties every answer to a specific source
 - Caching for repeated queries
 - Containerised deployment
 - UI: Next.js
-- `[undecided]` Specific embedding model
-- `[undecided]` Specific LLM provider
+- Embedding model: `sentence-transformers/all-MiniLM-L6-v2` (local)
+- LLM provider: Groq API via `ChatGroq` (configurable, default `llama-3.3-70b-versatile`)
+- Re-ranker: `cross-encoder/ms-marco-MiniLM-L-6-v2` (local)
+- Persistent multi-turn chat sessions stored in SQLite
 
 ## Brand Commitments
 

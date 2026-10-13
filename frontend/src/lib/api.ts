@@ -1,4 +1,4 @@
-import { QueryResponse, IngestResponse } from "@/types";
+import { QueryResponse, IngestResponse, ChatSession, Message } from "@/types";
 
 const API_BASE = "/api";
 
@@ -48,6 +48,7 @@ export async function uploadDocuments(
 export async function queryDocuments(
   query: string,
   k = 5,
+  sessionId?: string | null,
   timeoutMs = 120000
 ): Promise<QueryResponse> {
   const controller = new AbortController();
@@ -56,7 +57,11 @@ export async function queryDocuments(
     const res = await fetch(`${API_BASE}/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, k }),
+      body: JSON.stringify({
+        query,
+        k,
+        session_id: sessionId || null,
+      }),
       signal: controller.signal,
     });
     if (!res.ok) {
@@ -66,5 +71,59 @@ export async function queryDocuments(
     return res.json();
   } finally {
     clearTimeout(timer);
+  }
+}
+
+export async function fetchSessions(): Promise<ChatSession[]> {
+  const res = await fetch(`${API_BASE}/sessions`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch sessions");
+  }
+  return res.json();
+}
+
+export async function createSession(title = "New Chat"): Promise<ChatSession> {
+  const res = await fetch(`${API_BASE}/sessions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to create session");
+  }
+  return res.json();
+}
+
+export async function fetchSessionDetail(
+  sessionId: string
+): Promise<{ session: ChatSession; messages: Message[] }> {
+  const res = await fetch(`${API_BASE}/sessions/${sessionId}`);
+  if (!res.ok) {
+    throw new Error("Failed to load conversation history");
+  }
+  return res.json();
+}
+
+export async function renameSession(
+  sessionId: string,
+  title: string
+): Promise<ChatSession> {
+  const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to rename session");
+  }
+  return res.json();
+}
+
+export async function deleteSession(sessionId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to delete session");
   }
 }

@@ -3,8 +3,8 @@
 import { useRef, useState } from "react";
 import { uploadDocuments } from "@/lib/api";
 
-const ACCEPTED = ".pdf,.docx,.html,.htm,.md,.txt";
-const ACCEPTED_LABEL = "PDF · DOCX · HTML · MD · TXT";
+const ACCEPTED = ".pdf,.docx,.html,.htm,.md,.txt,.pptx";
+const ACCEPTED_LABEL = "PDF · DOCX · PPTX · HTML · MD · TXT";
 
 interface IngestPanelProps {
   onIngested: (info: string) => void;

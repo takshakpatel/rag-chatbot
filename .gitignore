@@ -21,3 +21,6 @@ backend/extracted_images/
 .impeccable/
 .surface/
 
+# Obsidian vault (retired from the project)
+.obsidian/
+

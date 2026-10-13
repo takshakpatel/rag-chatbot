@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,23 +18,36 @@ from app.vectorstore import add_documents_to_store, reset_store, get_vectorstore
 from app.rag import build_rag_answer
 from app.cache import query_cache
 from app.token_tracker import token_tracker
+from app.database import (
+    create_session,
+    list_sessions,
+    get_session,
+    update_session_title,
+    delete_session,
+    add_message,
+    get_session_messages,
+)
 from app.schemas import (
     IngestRequest,
     IngestResponse,
     QueryRequest,
     QueryResponse,
     SourceChunk,
+    ChatSession,
+    ChatMessage,
+    CreateSessionRequest,
+    UpdateSessionRequest,
 )
 
 app = FastAPI(
     title="Lumen",
     description="Lumen — retrieval-augmented generation over your own documents.",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -80,12 +93,6 @@ async def ingest_upload(
     chunk_size: int = 1000,
     chunk_overlap: int = 200,
 ):
-    """Ingest documents uploaded directly from the browser.
-
-    Accepts any number of files; only supported extensions (PDF, DOCX, HTML,
-    MD, TXT) are processed. Files are written to a temp directory so the
-    existing loaders handle them identically to local files.
-    """
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
@@ -95,12 +102,10 @@ async def ingest_upload(
         for up in files:
             suffix = Path(up.filename or "").suffix.lower()
             if suffix not in SUPPORTED_EXTENSIONS:
-                # Reject unsupported files early with a clear message.
                 raise HTTPException(
                     status_code=415,
                     detail=f"Unsupported file type: {up.filename or 'unknown'}. Accepted: {', '.join(sorted(SUPPORTED_EXTENSIONS))}",
                 )
-            # Sanitize filename to avoid path traversal
             safe_name = Path(up.filename or "upload").name
             dest = temp_dir / safe_name
             with dest.open("wb") as f:
@@ -108,11 +113,52 @@ async def ingest_upload(
             saved.append(dest)
 
         docs = load_uploaded_files(saved)
+        result = _ingest_docs(docs, collection_name, chunk_size, chunk_overlap)
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-    return _ingest_docs(docs, collection_name, chunk_size, chunk_overlap)
+    return result
 
+
+# --- Sessions & History Endpoints ---
+
+@app.get("/sessions", response_model=list[ChatSession])
+def get_sessions():
+    return list_sessions()
+
+
+@app.post("/sessions", response_model=ChatSession)
+def create_new_session(req: CreateSessionRequest | None = None):
+    title = req.title if req else "New Chat"
+    return create_session(title=title)
+
+
+@app.get("/sessions/{session_id}")
+def get_session_detail(session_id: str):
+    sess = get_session(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    messages = get_session_messages(session_id)
+    return {"session": sess, "messages": messages}
+
+
+@app.patch("/sessions/{session_id}", response_model=ChatSession)
+def rename_session(session_id: str, req: UpdateSessionRequest):
+    updated = update_session_title(session_id, req.title)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return updated
+
+
+@app.delete("/sessions/{session_id}")
+def remove_session(session_id: str):
+    deleted = delete_session(session_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {"status": "deleted", "session_id": session_id}
+
+
+# --- Query Endpoints ---
 
 @app.post("/query", response_model=QueryResponse)
 def query(req: QueryRequest):
@@ -120,26 +166,11 @@ def query(req: QueryRequest):
     if store._collection.count() == 0:
         raise HTTPException(status_code=400, detail="No documents ingested yet. Call /ingest first.")
 
-    result = build_rag_answer(
-        query=req.query,
-        k=req.k,
-        collection_name=req.collection_name,
-        use_hybrid=False,
-        use_reranker=False,
-    )
-
-    return QueryResponse(
-        answer=result["answer"],
-        sources=[SourceChunk(**s) for s in result["sources"]],
-        query=result["query"],
-    )
-
-
-@app.post("/query/hybrid")
-def query_hybrid(req: QueryRequest):
-    store = get_vectorstore(collection_name=req.collection_name)
-    if store._collection.count() == 0:
-        raise HTTPException(status_code=400, detail="No documents ingested yet. Call /ingest first.")
+    chat_history: list[dict] = []
+    if req.session_id:
+        chat_history = get_session_messages(req.session_id)
+        # Record user question
+        add_message(session_id=req.session_id, role="user", content=req.query)
 
     result = build_rag_answer(
         query=req.query,
@@ -148,16 +179,34 @@ def query_hybrid(req: QueryRequest):
         use_hybrid=True,
         use_reranker=True,
         use_cache=True,
+        chat_history=chat_history,
     )
 
-    return {
-        "answer": result["answer"],
-        "sources": [SourceChunk(**s) for s in result["sources"]],
-        "query": result["query"],
-        "cached": result["cached"],
-        "tokens": result["tokens"],
-        "latency_ms": result["latency_ms"],
-    }
+    if req.session_id:
+        # Record assistant answer with citations and tokens
+        add_message(
+            session_id=req.session_id,
+            role="assistant",
+            content=result["answer"],
+            sources=result["sources"],
+            tokens=result["tokens"],
+            latency_ms=result["latency_ms"],
+        )
+
+    return QueryResponse(
+        answer=result["answer"],
+        sources=[SourceChunk(**s) for s in result["sources"]],
+        query=result["query"],
+        session_id=req.session_id,
+        cached=result.get("cached", False),
+        tokens=result.get("tokens"),
+        latency_ms=result.get("latency_ms"),
+    )
+
+
+@app.post("/query/hybrid", response_model=QueryResponse)
+def query_hybrid(req: QueryRequest):
+    return query(req)
 
 
 @app.get("/stats")
